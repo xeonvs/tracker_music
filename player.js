@@ -6,6 +6,22 @@ function getCookie(name) {
 
 const token = getCookie('pt');
 
+// Ensure media requests include token header when required
+if (token) {
+  (function(open, send) {
+    XMLHttpRequest.prototype.open = function(method, url, async, user, pass) {
+      this._url = url;
+      return open.call(this, method, url, async, user, pass);
+    };
+    XMLHttpRequest.prototype.send = function(body) {
+      if (this._url && this._url.indexOf('media/') !== -1) {
+        this.setRequestHeader('X-Player-Token', token);
+      }
+      return send.call(this, body);
+    };
+  })(XMLHttpRequest.prototype.open, XMLHttpRequest.prototype.send);
+}
+
 let playlist = [];
 
 let currentIndex = 0;
@@ -38,8 +54,7 @@ function loadTrack(index) {
   if (audio && !audio.paused) audio.pause();
   if (track && track.close) track.close();
   currentIndex = index;
-  const options = token ? { headers: { 'X-Player-Token': token } } : {};
-  track = new player.Track(playlist[index].file, options);
+    track = new player.Track(playlist[index].file);
   audio = track.open();
   audio.volume = elements.volume.value / 100;
   elements.trackInfo.textContent = playlist[index].title;

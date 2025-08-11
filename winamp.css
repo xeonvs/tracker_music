@@ -38,24 +38,23 @@ body {
   margin-top: 4px;
 }
 #volume-container {
-  display: flex;
-  align-items: center;
-  margin-top: 4px;
-  height: 70px;
-}
+    display: flex;
+    align-items: center;
+    margin-top: 4px;
+  }
 
-#volume-container img {
-  width: 16px;
-  height: 16px;
-}
+  #volume-container img {
+    width: 16px;
+    height: 16px;
+  }
 
-#volume {
-  writing-mode: bt-lr;
-  -webkit-appearance: slider-vertical;
-  width: 8px;
-  height: 70px;
-  margin-left: 4px;
-}
+  #volume {
+    transform: rotate(-90deg);
+    transform-origin: left center;
+    width: 70px;
+    height: 8px;
+    margin-left: 4px;
+  }
 #playlist {
   list-style: none;
   padding: 0;

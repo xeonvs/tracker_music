@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 MEDIA_DIR="media"
 OUTPUT="playlist.json"
 

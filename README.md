@@ -1,2 +1,2 @@
 # tracker_music
-Tracker and Damascene music player
+Tracker and Damoscene music player

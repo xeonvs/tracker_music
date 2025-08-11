@@ -1,0 +1,74 @@
+Changelog
+=========
+
+0.6.2 (2025-05-31)
+~~~~~~~~~~~~~~~~~~
+
+ * Updated libopenmpt to 0.8.0
+
+
+0.6.1 (2024-01-21)
+~~~~~~~~~~~~~~~~~~
+
+ * Updated ASAP to version 6.0.1
+ * Updated libopenmpt to 0.7.3
+ * Updated PSGplay to 0.6
+ * Fixed "audioContext not active" errors in Safari
+ * Fixed failure to start playback when playing OpenMPT and PSGplay files on the same page load
+ * Removed need to specify pathToLibPSGPlay option
+ * Replaced Closure Compiler with babel-minify
+
+
+0.6 (2022-08-06)
+~~~~~~~~~~~~~~~~
+
+ * Added PSGPlay player by Fredrik Noring to support Atari ST .sndh format
+
+
+0.5.1 (2022-06-30)
+~~~~~~~~~~~~~~~~~~
+
+ * Updated libopenmpt to version 0.6.4
+ * Enabled libopenmpt's Amiga resampler
+
+
+0.5 (2020-04-20)
+~~~~~~~~~~~~~~~~
+
+ * Added ASAP player by Piotr Fusik (Fox) to support .sap and other Atari 8-bit formats
+ * Added support for emulating the YM chip in place of the AY (tIn)
+ * Updated libopenmpt to current SVN build (0.5, r12686) and rebuilt with WebAssembly support
+
+
+0.4 (2017-08-11)
+~~~~~~~~~~~~~~~~
+
+ * Added .sid file format support, via jsSID by Mihaly Horvath (Hermit)
+ * Fixed PSG player to interpret 0xfe commands correctly
+ * Updated libopenmpt to version 0.3.0-pre.5+r8745
+
+
+0.3 (2016-11-28)
+~~~~~~~~~~~~~~~~
+
+ * Web audio player now falls back on webkitAudioContext if AudioContext is not available (for Safari compatibility)
+ * Fixed channel count initialisation for libopenmpt (for Safari compatibility)
+ * Replaced Z80-emulated version of the ZX Spectrum STC player code with a native Javascript port that's about 3 times faster
+ * Added build steps for Emscripten and libopenmpt to the development VM, as an optional install
+ * Updated the libopenmpt backend to handle the libopenmpt.js.mem file created by newer versions of Emscripten. NOTE: As a result of this change, use of the `pathToLibOpenMPT` option is now compulsory - it is no longer valid to import libopenmpt.js directly via a `script` tag.
+ * Added ZX Spectrum SQ-Tracker (.sqt) file format support
+ * Updated libopenmpt to version 0.3.0-pre.2+r7430
+
+
+0.2 (2016-04-24)
+~~~~~~~~~~~~~~~~
+
+ * Added 'Roundel' UI
+ * Fixed error when closing a WebAudioPlayer track that has not begun playback
+ * Fixed error when accessing currentTime on a paused WebAudioPlayer track
+
+
+0.1 (2016-04-11)
+~~~~~~~~~~~~~~~~
+
+ * Initial release

@@ -4,7 +4,7 @@ body {
   color: #fff;
 }
 #player {
-  width: 280px;
+  width: 320px;
   background: #2b2b2b;
   border: 2px solid #000;
   padding: 4px;
@@ -19,29 +19,41 @@ body {
 }
 #controls {
   margin-top: 4px;
+}
+#controls-top {
   display: flex;
   align-items: center;
 }
-#controls button {
+#controls-top button {
   background: none;
   border: none;
   margin-right: 2px;
   cursor: pointer;
 }
-#controls button img {
+#controls-top button img {
   width: 20px;
   height: 20px;
 }
 #progress {
-  flex: 1;
+  width: 100%;
+  margin-top: 4px;
 }
 #volume-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  margin-left: 4px;
+  margin-left: auto;
+}
+#volume-container img {
+  width: 16px;
+  height: 16px;
+  margin-bottom: 4px;
 }
 #volume {
-  width: 80px;
+  -webkit-appearance: slider-vertical;
+  writing-mode: bt-lr;
+  width: 8px;
+  height: 70px;
 }
 #playlist {
   list-style: none;

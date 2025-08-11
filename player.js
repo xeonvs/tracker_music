@@ -6,17 +6,50 @@ function getCookie(name) {
 
 const token = getCookie('pt');
 
-const playlist = [
-  { title: 'Ambient Power - Vogue', file: 'media/ambpower.mod' },
-  { title: 'Inside Out - Purple Motion', file: 'media/inside_out.s3m' }
-];
+// Ensure media requests include token header when required
+if (token) {
+  (function(open, send) {
+    XMLHttpRequest.prototype.open = function(method, url, async, user, pass) {
+      this._url = url;
+      return open.call(this, method, url, async, user, pass);
+    };
+    XMLHttpRequest.prototype.send = function(body) {
+      if (this._url && this._url.indexOf('media/') !== -1) {
+        this.setRequestHeader('X-Player-Token', token);
+      }
+      return send.call(this, body);
+    };
+  })(XMLHttpRequest.prototype.open, XMLHttpRequest.prototype.send);
+}
+
+let playlist = [];
 
 let currentIndex = 0;
 let audio = null;
 let track = null;
-const player = new Cowbell.Player.OpenMPT({
+
+const audioPlayer = new Cowbell.Player.Audio();
+const openmptPlayer = new Cowbell.Player.OpenMPT({
   pathToLibOpenMPT: 'vendor/cowbell/cowbell/openmpt/libopenmpt.js'
 });
+const players = {
+  mp3: audioPlayer,
+  ogg: audioPlayer,
+  wav: audioPlayer,
+  psg: new Cowbell.Player.PSG(),
+  psy: new Cowbell.Player.PSG({ ayFrequency: 2000000, ayMode: 'YM' }),
+  sndh: new Cowbell.Player.PSGPlay(),
+  vtx: new Cowbell.Player.VTX(),
+  stc: new Cowbell.Player.ZXSTC({ stereoMode: 'acb' }),
+  pt3: new Cowbell.Player.ZXPT3({ stereoMode: 'acb' }),
+  sqt: new Cowbell.Player.ZXSQT({ stereoMode: 'acb' }),
+  sid: new Cowbell.Player.JSSID(),
+  sap: new Cowbell.Player.ASAP(),
+  mod: openmptPlayer,
+  s3m: openmptPlayer,
+  xm: openmptPlayer,
+  it: openmptPlayer
+};
 
 const elements = {
   trackInfo: document.getElementById('track-info'),
@@ -41,7 +74,14 @@ function loadTrack(index) {
   if (audio && !audio.paused) audio.pause();
   if (track && track.close) track.close();
   currentIndex = index;
-  track = new player.Track(playlist[index].file, { headers: { 'X-Player-Token': token } });
+  const file = playlist[index].file;
+  const ext = file.split('.').pop().toLowerCase();
+  const pl = players[ext];
+  if (!pl) {
+    console.error('No player for extension', ext);
+    return;
+  }
+  track = new pl.Track(file);
   audio = track.open();
   audio.volume = elements.volume.value / 100;
   elements.trackInfo.textContent = playlist[index].title;
@@ -65,6 +105,17 @@ function updatePlaylistUI() {
     if (i === currentIndex) li.classList.add('active');
     else li.classList.remove('active');
   });
+}
+
+function setupPlaylistUI() {
+  elements.playlist.innerHTML = '';
+  playlist.forEach((t, i) => {
+    const li = document.createElement('li');
+    li.textContent = t.title;
+    li.onclick = () => { loadTrack(i); playCurrent(); };
+    elements.playlist.appendChild(li);
+  });
+  updatePlaylistUI();
 }
 
 function playCurrent() {
@@ -93,14 +144,17 @@ function prevTrack() {
   playCurrent();
 }
 
-// Setup playlist UI
-playlist.forEach((t, i) => {
-  const li = document.createElement('li');
-  li.textContent = t.title;
-  li.onclick = () => { loadTrack(i); playCurrent(); };
-  elements.playlist.appendChild(li);
-});
-updatePlaylistUI();
+async function fetchPlaylist() {
+  try {
+    const response = await fetch('playlist.json');
+    playlist = await response.json();
+    setupPlaylistUI();
+    // Load first track but don't autoplay
+    loadTrack(0);
+  } catch (err) {
+    console.error('Failed to load playlist', err);
+  }
+}
 
 // Control handlers
 elements.play.onclick = playCurrent;
@@ -139,6 +193,4 @@ document.addEventListener('keydown', (e) => {
       break;
   }
 });
-
-// Load first track but don't autoplay
-loadTrack(0);
+fetchPlaylist();

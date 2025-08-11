@@ -1,0 +1,116 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Cowbell</title>
+		<script src="../dist/cowbell/cowbell.min.js"></script>
+		<script src="../dist/cowbell/ay_chip.min.js"></script>
+		<script src="../dist/cowbell/vtx.min.js"></script>
+		<script src="../dist/cowbell/zx.min.js"></script>
+		<script src="../dist/cowbell/openmpt.min.js"></script>
+		<script src="../dist/cowbell/psgplay.min.js"></script>
+		<script src="../dist/cowbell/jssid.min.js"></script>
+		<script src="../dist/cowbell/asap.min.js"></script>
+
+		<script>
+			function go() {
+				var audioPlayer = new Cowbell.Player.Audio();
+				var psgZXPlayer = new Cowbell.Player.PSG();
+				var psgSTPlayer = new Cowbell.Player.PSG({ayFrequency: 2000000, ayMode:"YM"});
+				var stcPlayer = new Cowbell.Player.ZXSTC({stereoMode: 'acb'});
+				var pt3Player = new Cowbell.Player.ZXPT3({stereoMode: 'acb'});
+				var sqtPlayer = new Cowbell.Player.ZXSQT({stereoMode: 'acb'});
+				var vtxPlayer = new Cowbell.Player.VTX();
+				var modPlayer = new Cowbell.Player.OpenMPT({
+					'pathToLibOpenMPT': '../dist/cowbell/libopenmpt.js'
+				});
+				var sidPlayer = new Cowbell.Player.JSSID();
+				var asapPlayer = new Cowbell.Player.ASAP();
+				var sndhPlayer = new Cowbell.Player.PSGPlay();
+
+				var tracks = [
+					[
+						"Zipper Flies - ihatemornings (MP3)",
+						new audioPlayer.Track('music/zipper_flies.mp3')
+					],
+					[
+						"Dancing Queen - Gasman (PSG)",
+						new psgZXPlayer.Track('music/dancing_queen.psg')
+					],
+					[
+						"Enchanted Lands - Jochen Hippel (PSY)",
+						new psgSTPlayer.Track('music/enchanted.psy')
+					],
+					[
+						"There Aren't Any Sheep In Outer Mongolia - Mad Max (SNDH)",
+						new sndhPlayer.Track('music/There_Are_No_Sheep.sndh')
+					],
+					[
+						"Worlds Apart - Gasman (STC)",
+						new stcPlayer.Track('music/gasman_-_worlds_apart.stc')
+					],
+					[
+						"Summer Mood - Megus (PT3)",
+						new pt3Player.Track('music/summer_mood.pt3')
+					],
+					[
+						"Squareland Story - Asi (VTX)",
+						new vtxPlayer.Track('music/squareland_story.vtx')
+					],
+					[
+						"Ambient Power - Vogue (MOD)",
+						new modPlayer.Track('music/ambpower.mod')
+					],
+					[
+						"Inside Out - Purple Motion (S3M)",
+						new modPlayer.Track('music/inside_out.s3m')
+					],
+					[
+						"Rainbow Dash - Radix & Xyce (XM)",
+						new modPlayer.Track('music/radix_xyce_-_rainbow_dash_.xm')
+					],
+					[
+						"Through Poland - Aki (SQT)",
+						new sqtPlayer.Track('music/through_poland.sqt')
+					],
+					[
+						"Cybernoid - Jeroen Tel (SID)",
+						new sidPlayer.Track('music/cybernoid.sid')
+					],
+					[
+						"Windy Mind - X-Ray (SAP)",
+						new asapPlayer.Track('music/windym.sap')
+					]
+				]
+
+				container = document.getElementById('player');
+				player = new Cowbell.UI.Roundel(container);
+
+				var selector = document.getElementById('track-select');
+				for (var i = 0; i < tracks.length; i++) {
+					var title = tracks[i][0];
+					var track = tracks[i][1];
+					var option = document.createElement('option');
+					selector.appendChild(option);
+					option.value = i;
+					option.appendChild(document.createTextNode(title));
+				}
+				selector.onchange = function() {
+					var index = parseInt(selector.value, 10);
+					if (!isNaN(index)) {
+						var track = tracks[index][1];
+						player.open(track);
+					}
+				}
+			}
+		</script>
+	</head>
+	<body onload="go()">
+		<h1>Cowbell</h1>
+		<h2>a universal web audio player for demoscene music</h2>
+		<select id="track-select">
+			<option value="">Select a track...</option>
+		</select>
+
+		<div id="player" style="margin: 1em;"></div>
+	</body>
+</html>

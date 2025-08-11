@@ -1,0 +1,28 @@
+Piotr Fusik: Creator and lead developer.
+Atari800 Emulator Developers: 6502 and POKEY emulation used in 0.x.y versions of ASAP.
+Rod Castler: Android background photo.
+Zdenek Eisenhammer: Testing.
+Maciej Grzybek: Fixed an overflow in the Silverlight port.
+Jakub Husak: SAP fingerprint calculation. asapscan fixes.
+Henryk Karpowicz: CMC routine modified for the CM3 format.
+Maciek Konecki: Porting to C#.
+Marek Konopka: 6502 routine for playing DLT.
+Daniel Koźminski: Ideas.
+Jerzy Kut: FC format.
+Marcin Lewandowski: 6502 routines for playing CMC, MPT, TMC and TM2.
+Ian Luck: Guided development of XMPlay and BASS plugins.
+MarOk: CMS routine fix.
+Adrian Matoga: Implemented POKEY nonlinearities, configurable sample rate, D port. Photo of stereo POKEY.
+Perry McFarlane: POKEY reverse-engineering.
+Kostas Nakos: Windows CE testing.
+Petri Pyy: macOS releases.
+Mariusz Rozwadowski: Suggested CMS, CM3, DLT and STIL format support.
+Sławomir Śledź: Windows Mobile setup. Thorough testing.
+David Spilka: 6502 routine for playing CMS.
+Radek Štěrba: 6502 routine for playing RMT. Testing.
+Łukasz Sychowicz: Windows icons. Testing.
+Paweł Szewczyk: Windows setup graphics.
+Michał Szpilowski: Testing.
+takron27: Android beta-testing.
+Piotr Wiszowaty: VLC 3 compatibility.
+Grzegorz Żyła: XBMC plugin testing.

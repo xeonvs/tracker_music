@@ -27,6 +27,11 @@ let playlist = [];
 let currentIndex = 0;
 let audio = null;
 let track = null;
+let currentPlayer = null;
+
+let masterGain = null;
+
+let shuffleEnabled = false;
 
 const audioPlayer = new Cowbell.Player.Audio();
 const openmptPlayer = new Cowbell.Player.OpenMPT({
@@ -61,7 +66,8 @@ const elements = {
   pause: document.getElementById('btn-pause'),
   stop: document.getElementById('btn-stop'),
   next: document.getElementById('btn-next'),
-  prev: document.getElementById('btn-prev')
+  prev: document.getElementById('btn-prev'),
+  random: document.getElementById('btn-random')
 };
 
 function formatTime(t) {
@@ -77,13 +83,15 @@ function loadTrack(index) {
   const file = playlist[index].file;
   const ext = file.split('.').pop().toLowerCase();
   const pl = players[ext];
+  currentPlayer = pl;
   if (!pl) {
     console.error('No player for extension', ext);
     return;
   }
   track = new pl.Track(file);
   audio = track.open();
-  audio.volume = elements.volume.value / 100;
+  hookUpGain();
+  applyVolume();
   elements.trackInfo.textContent = playlist[index].title;
   audio.onloadedmetadata = () => {
     elements.progress.max = audio.duration;
@@ -118,8 +126,35 @@ function setupPlaylistUI() {
   updatePlaylistUI();
 }
 
+
+function hookUpGain() {
+  if (masterGain && masterGain.context) {
+    try { masterGain.disconnect(); } catch (e) {}
+    masterGain = null;
+  }
+  if (!audio) return;
+  if (audio instanceof HTMLMediaElement) {
+    return;
+  }
+  if (audio.context && audio.node && audio.context.createGain) {
+    masterGain = audio.context.createGain();
+    if (typeof audio.node.disconnect === 'function') {
+      try { audio.node.disconnect(); } catch (e) {}
+    }
+    audio.node.connect(masterGain);
+    masterGain.connect(audio.context.destination);
+  }
+}
+
+
 function playCurrent() {
-  if (!audio) loadTrack(currentIndex);
+  if (!audio) {
+    if (!playlist.length) return;
+    loadTrack(currentIndex);
+  }
+  if (audio.context && audio.context.state === 'suspended') {
+    audio.context.resume();
+  }
   audio.play();
 }
 
@@ -135,7 +170,19 @@ function stopCurrent() {
 }
 
 function nextTrack() {
-  loadTrack((currentIndex + 1) % playlist.length);
+  let index;
+  if (shuffleEnabled) {
+    if (playlist.length <= 1) {
+      index = currentIndex;
+    } else {
+      do {
+        index = Math.floor(Math.random() * playlist.length);
+      } while (index === currentIndex);
+    }
+  } else {
+    index = (currentIndex + 1) % playlist.length;
+  }
+  loadTrack(index);
   playCurrent();
 }
 
@@ -149,8 +196,10 @@ async function fetchPlaylist() {
     const response = await fetch('playlist.json');
     playlist = await response.json();
     setupPlaylistUI();
-    // Load first track but don't autoplay
-    loadTrack(0);
+    if (playlist.length) {
+      currentIndex = 0;
+      elements.trackInfo.textContent = playlist[0].title;
+    }
   } catch (err) {
     console.error('Failed to load playlist', err);
   }
@@ -162,14 +211,37 @@ elements.pause.onclick = pauseCurrent;
 elements.stop.onclick = stopCurrent;
 elements.next.onclick = nextTrack;
 elements.prev.onclick = prevTrack;
+elements.random.onclick = () => {
+  shuffleEnabled = !shuffleEnabled;
+  const img = elements.random.querySelector('img');
+  img.src = shuffleEnabled ? 'img/random_active.svg' : 'img/random.svg';
+};
 
 elements.progress.oninput = () => {
   if (audio) audio.currentTime = elements.progress.value;
 };
 
-elements.volume.oninput = () => {
-  if (audio) audio.volume = elements.volume.value / 100;
-};
+function applyVolume() {
+  const vol = elements.volume.value / 100;
+  if (audio) {
+    if (audio instanceof HTMLMediaElement) {
+      audio.volume = vol;
+    } else if (masterGain) {
+      masterGain.gain.value = vol;
+    } else if (typeof audio.setVolume === 'function') {
+      audio.setVolume(vol);
+    }
+  }
+  if (track && typeof track.setVolume === 'function') {
+    track.setVolume(vol);
+  }
+  if (currentPlayer && typeof currentPlayer.setVolume === 'function') {
+    currentPlayer.setVolume(vol);
+  }
+}
+
+elements.volume.addEventListener('input', applyVolume);
+elements.volume.addEventListener('change', applyVolume);
 
 document.addEventListener('keydown', (e) => {
   switch (e.code) {
@@ -185,11 +257,11 @@ document.addEventListener('keydown', (e) => {
       break;
     case 'ArrowUp':
       elements.volume.value = Math.min(100, Number(elements.volume.value) + 5);
-      elements.volume.oninput();
+      applyVolume();
       break;
     case 'ArrowDown':
       elements.volume.value = Math.max(0, Number(elements.volume.value) - 5);
-      elements.volume.oninput();
+      applyVolume();
       break;
   }
 });

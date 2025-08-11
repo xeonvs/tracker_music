@@ -20,6 +20,7 @@ body {
 #controls {
   margin-top: 4px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
 }
 #controls button {
@@ -33,13 +34,21 @@ body {
   height: 20px;
 }
 #progress {
-  flex: 1;
+  flex: 1 0 100%;
+  margin-top: 4px;
 }
 #volume-container {
   display: flex;
   align-items: center;
-  margin-left: 4px;
+  margin-top: 4px;
 }
+
+#volume-container img {
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+}
+
 #volume {
   width: 80px;
 }

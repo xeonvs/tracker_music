@@ -6,10 +6,7 @@ function getCookie(name) {
 
 const token = getCookie('pt');
 
-const playlist = [
-  { title: 'Ambient Power - Vogue', file: 'media/ambpower.mod' },
-  { title: 'Inside Out - Purple Motion', file: 'media/inside_out.s3m' }
-];
+let playlist = [];
 
 let currentIndex = 0;
 let audio = null;
@@ -67,6 +64,17 @@ function updatePlaylistUI() {
   });
 }
 
+function setupPlaylistUI() {
+  elements.playlist.innerHTML = '';
+  playlist.forEach((t, i) => {
+    const li = document.createElement('li');
+    li.textContent = t.title;
+    li.onclick = () => { loadTrack(i); playCurrent(); };
+    elements.playlist.appendChild(li);
+  });
+  updatePlaylistUI();
+}
+
 function playCurrent() {
   if (!audio) loadTrack(currentIndex);
   audio.play();
@@ -93,14 +101,17 @@ function prevTrack() {
   playCurrent();
 }
 
-// Setup playlist UI
-playlist.forEach((t, i) => {
-  const li = document.createElement('li');
-  li.textContent = t.title;
-  li.onclick = () => { loadTrack(i); playCurrent(); };
-  elements.playlist.appendChild(li);
-});
-updatePlaylistUI();
+async function fetchPlaylist() {
+  try {
+    const response = await fetch('playlist.json');
+    playlist = await response.json();
+    setupPlaylistUI();
+    // Load first track but don't autoplay
+    loadTrack(0);
+  } catch (err) {
+    console.error('Failed to load playlist', err);
+  }
+}
 
 // Control handlers
 elements.play.onclick = playCurrent;
@@ -139,6 +150,4 @@ document.addEventListener('keydown', (e) => {
       break;
   }
 });
-
-// Load first track but don't autoplay
-loadTrack(0);
+fetchPlaylist();

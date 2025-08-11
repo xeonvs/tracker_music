@@ -1,0 +1,61 @@
+body {
+  background: #1b1b1b;
+  font-family: 'Arial', sans-serif;
+  color: #fff;
+}
+#player {
+  width: 280px;
+  background: #2b2b2b;
+  border: 2px solid #000;
+  padding: 4px;
+}
+#display {
+  background: #000;
+  padding: 2px 4px;
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+#controls {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+}
+#controls button {
+  background: none;
+  border: none;
+  margin-right: 2px;
+  cursor: pointer;
+}
+#controls button img {
+  width: 20px;
+  height: 20px;
+}
+#progress {
+  flex: 1;
+}
+#volume-container {
+  display: flex;
+  align-items: center;
+  margin-left: 4px;
+}
+#volume {
+  width: 80px;
+}
+#playlist {
+  list-style: none;
+  padding: 0;
+  margin-top: 6px;
+  background: #1e1e1e;
+  max-height: 150px;
+  overflow-y: auto;
+  font-size: 12px;
+}
+#playlist li {
+  padding: 2px 4px;
+  cursor: pointer;
+}
+#playlist li.active {
+  background: #0066cc;
+}

@@ -38,7 +38,8 @@ function loadTrack(index) {
   if (audio && !audio.paused) audio.pause();
   if (track && track.close) track.close();
   currentIndex = index;
-  track = new player.Track(playlist[index].file, { headers: { 'X-Player-Token': token } });
+  const options = token ? { headers: { 'X-Player-Token': token } } : {};
+  track = new player.Track(playlist[index].file, options);
   audio = track.open();
   audio.volume = elements.volume.value / 100;
   elements.trackInfo.textContent = playlist[index].title;

@@ -9,6 +9,7 @@ for path in "$MEDIA_DIR"/*; do
   file=$(basename "$path")
   [ "$file" = ".gitkeep" ] && continue
   title="${file%.*}"
+  title="${title//_/ }"
   if [ "$first" = true ]; then
     first=false
   else

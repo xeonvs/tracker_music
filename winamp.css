@@ -41,16 +41,20 @@ body {
   display: flex;
   align-items: center;
   margin-top: 4px;
+  height: 70px;
 }
 
 #volume-container img {
   width: 16px;
   height: 16px;
-  margin-right: 4px;
 }
 
 #volume {
-  width: 80px;
+  writing-mode: bt-lr;
+  -webkit-appearance: slider-vertical;
+  width: 8px;
+  height: 70px;
+  margin-left: 4px;
 }
 #playlist {
   list-style: none;

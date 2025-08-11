@@ -6,7 +6,7 @@ Winamp-styled web player for tracker modules using [Cowbell](https://github.com/
 
 Serve the project with nginx or any static HTTP server. The entry point is `index.cowbell.html`.
 
-Place tracker module files in the `media` directory and run `./generate_playlist.sh` to create a `playlist.json` file listing available tracks. Requests to `/media` must include the `X-Player-Token` header matching the `pt` cookie as in the example nginx configuration.
+Place tracker module files in the `media` directory and run `./generate_playlist.sh` to create a `playlist.json` file listing available tracks. The script only includes files using formats supported by the Cowbell SDK. Requests to `/media` must include the `X-Player-Token` header matching the `pt` cookie as in the example nginx configuration.
 
 ### Example nginx configuration
 

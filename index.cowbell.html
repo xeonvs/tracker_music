@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self'; media-src 'self'; connect-src 'self'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'wasm-unsafe-eval' blob:; img-src 'self'; media-src 'self'; connect-src 'self'" />
   <title>Tracker Player</title>
   <link rel="stylesheet" href="winamp.css" />
   <script src="vendor/cowbell/cowbell/cowbell.js"></script>

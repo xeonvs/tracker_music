@@ -115,9 +115,9 @@ function normalizePath(path) {
 
 function loadTrack(file) {
   file = normalizePath(file);
-  if (!file) return;
+  if (!file) return false;
   const index = playlist.findIndex(t => t.file === file);
-  if (index === -1) return;
+  if (index === -1) return false;
   if (audio && !audio.paused) audio.pause();
   if (track && track.close) track.close();
   currentFile = file;
@@ -127,8 +127,10 @@ function loadTrack(file) {
   const pl = players[ext];
   currentPlayer = pl;
   if (!pl) {
-    console.error('No player for extension', ext);
-    return;
+    console.warn('No player for extension', ext);
+    audio = null;
+    track = null;
+    return false;
   }
   track = new pl.Track(file);
   audio = track.open();
@@ -147,6 +149,7 @@ function loadTrack(file) {
     nextTrack();
   };
   updatePlaylistUI();
+  return true;
 }
 
 function updatePlaylistUI() {
@@ -163,7 +166,13 @@ function setupPlaylistUI() {
   playlist.forEach((t) => {
     const li = document.createElement('li');
     li.textContent = t.title;
-    li.onclick = () => { loadTrack(t.file); playCurrent(); };
+    li.onclick = () => {
+      if (loadTrack(t.file)) {
+        playCurrent();
+      } else {
+        nextTrack();
+      }
+    };
     elements.playlist.appendChild(li);
   });
   updatePlaylistUI();
@@ -196,12 +205,15 @@ function playCurrent() {
     if (!currentFile || playlist.findIndex(t => t.file === currentFile) === -1) {
       currentFile = playlist[0].file;
     }
-    loadTrack(currentFile);
+    if (!loadTrack(currentFile)) {
+      nextTrack();
+      return;
+    }
   }
-  if (audio.context && audio.context.state === 'suspended') {
+  if (audio && audio.context && audio.context.state === 'suspended') {
     audio.context.resume();
   }
-  audio.play();
+  if (audio) audio.play();
 }
 
 function pauseCurrent() {
@@ -216,28 +228,43 @@ function stopCurrent() {
 }
 
 function nextTrack() {
-  let index;
+  if (!playlist.length) return;
   const currentIndex = playlist.findIndex(t => t.file === currentFile);
-  if (shuffleEnabled) {
-    if (playlist.length <= 1) {
-      index = currentIndex;
+  let index = currentIndex;
+  let tries = playlist.length;
+  while (tries--) {
+    if (shuffleEnabled) {
+      if (playlist.length <= 1) {
+        index = currentIndex;
+      } else {
+        do {
+          index = Math.floor(Math.random() * playlist.length);
+        } while (index === currentIndex);
+      }
     } else {
-      do {
-        index = Math.floor(Math.random() * playlist.length);
-      } while (index === currentIndex);
+      index = (index + 1) % playlist.length;
     }
-  } else {
-    index = (currentIndex + 1) % playlist.length;
+    if (loadTrack(playlist[index].file)) {
+      playCurrent();
+      return;
+    }
   }
-  loadTrack(playlist[index].file);
-  playCurrent();
+  console.warn('No playable tracks found');
 }
 
 function prevTrack() {
+  if (!playlist.length) return;
   const currentIndex = playlist.findIndex(t => t.file === currentFile);
-  const index = (currentIndex - 1 + playlist.length) % playlist.length;
-  loadTrack(playlist[index].file);
-  playCurrent();
+  let index = currentIndex;
+  let tries = playlist.length;
+  while (tries--) {
+    index = (index - 1 + playlist.length) % playlist.length;
+    if (loadTrack(playlist[index].file)) {
+      playCurrent();
+      return;
+    }
+  }
+  console.warn('No playable tracks found');
 }
 
 async function fetchPlaylist() {

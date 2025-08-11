@@ -28,15 +28,27 @@ let currentIndex = 0;
 let audio = null;
 let track = null;
 
+const audioPlayer = new Cowbell.Player.Audio();
 const openmptPlayer = new Cowbell.Player.OpenMPT({
   pathToLibOpenMPT: 'vendor/cowbell/cowbell/openmpt/libopenmpt.js'
 });
 const players = {
-  sndh: new Cowbell.Player.PSGPlay(),
+  mp3: audioPlayer,
+  ogg: audioPlayer,
+  wav: audioPlayer,
   psg: new Cowbell.Player.PSG(),
+  psy: new Cowbell.Player.PSG({ ayFrequency: 2000000, ayMode: 'YM' }),
+  sndh: new Cowbell.Player.PSGPlay(),
+  vtx: new Cowbell.Player.VTX(),
+  stc: new Cowbell.Player.ZXSTC({ stereoMode: 'acb' }),
+  pt3: new Cowbell.Player.ZXPT3({ stereoMode: 'acb' }),
+  sqt: new Cowbell.Player.ZXSQT({ stereoMode: 'acb' }),
+  sid: new Cowbell.Player.JSSID(),
+  sap: new Cowbell.Player.ASAP(),
   mod: openmptPlayer,
   s3m: openmptPlayer,
-  xm: openmptPlayer
+  xm: openmptPlayer,
+  it: openmptPlayer
 };
 
 const elements = {

@@ -6,6 +6,6 @@
   - https://github.com/demozoo/cowbell/blob/main/doc/usage.md
 - Example code for the SDK is available at https://github.com/demozoo/cowbell/tree/main/example
 - Use 2-space indentation and terminate statements with semicolons.
-- No automated test suite is present; running `npm test` will fail because `package.json` is missing. Execute it anyway as a best-effort check.
+- No automated test suite is present, and there is no `package.json`; do not run any `npm` commands.
 - Prefer `rg` (ripgrep) for code search and avoid `ls -R` or `grep -R` to keep operations fast.
-- To preview the player locally, serve the repo root over HTTP (e.g. `python -m http.server`) and open `index.cowbell.html` in a browser.
+- For manual testing, run `./generate_playlist.sh`, then serve the repo root over HTTP (e.g. `python -m http.server`) and verify `index.cowbell.html` loads (for example with `curl -I http://localhost:8000/index.cowbell.html`). The custom nginx configuration from production is not required.

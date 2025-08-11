@@ -97,7 +97,25 @@ function formatTime(t) {
   return m + ':' + s;
 }
 
+function normalizePath(path) {
+  const parts = path.split('/').filter(p => p && p !== '.');
+  const out = [];
+  for (const part of parts) {
+    if (part === '..') {
+      return null;
+    }
+    out.push(part);
+  }
+  const normalized = out.join('/');
+  if (!normalized.startsWith('media/')) {
+    return null;
+  }
+  return normalized;
+}
+
 function loadTrack(file) {
+  file = normalizePath(file);
+  if (!file) return;
   const index = playlist.findIndex(t => t.file === file);
   if (index === -1) return;
   if (audio && !audio.paused) audio.pause();
@@ -226,7 +244,14 @@ async function fetchPlaylist() {
   try {
     const response = await fetch('playlist.json');
     const rawList = await response.json();
-    const newList = rawList.filter(t => t && typeof t.title === 'string' && typeof t.file === 'string' && t.file.startsWith('media/'));
+    const newList = rawList
+      .filter(t => t && typeof t.title === 'string' && typeof t.file === 'string' && t.file.startsWith('media/') && !t.file.includes('..') && !t.file.startsWith('/'))
+      .map(t => {
+        const file = normalizePath(t.file);
+        if (!file) return null;
+        return { title: t.title, file };
+      })
+      .filter(Boolean);
     playlist = newList;
     setupPlaylistUI();
     const targetFile = userPrefs.file || currentFile;

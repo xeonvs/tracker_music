@@ -27,9 +27,17 @@ let playlist = [];
 let currentIndex = 0;
 let audio = null;
 let track = null;
-const player = new Cowbell.Player.OpenMPT({
+
+const openmptPlayer = new Cowbell.Player.OpenMPT({
   pathToLibOpenMPT: 'vendor/cowbell/cowbell/openmpt/libopenmpt.js'
 });
+const players = {
+  sndh: new Cowbell.Player.PSGPlay(),
+  psg: new Cowbell.Player.PSG(),
+  mod: openmptPlayer,
+  s3m: openmptPlayer,
+  xm: openmptPlayer
+};
 
 const elements = {
   trackInfo: document.getElementById('track-info'),
@@ -54,7 +62,14 @@ function loadTrack(index) {
   if (audio && !audio.paused) audio.pause();
   if (track && track.close) track.close();
   currentIndex = index;
-    track = new player.Track(playlist[index].file);
+  const file = playlist[index].file;
+  const ext = file.split('.').pop().toLowerCase();
+  const pl = players[ext];
+  if (!pl) {
+    console.error('No player for extension', ext);
+    return;
+  }
+  track = new pl.Track(file);
   audio = track.open();
   audio.volume = elements.volume.value / 100;
   elements.trackInfo.textContent = playlist[index].title;

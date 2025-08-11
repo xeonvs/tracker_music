@@ -10,11 +10,12 @@ for path in "$MEDIA_DIR"/*; do
   [ "$file" = ".gitkeep" ] && continue
   title="${file%.*}"
   title="${title//_/ }"
+  json=$(jq -n --arg title "$title" --arg file "$MEDIA_DIR/$file" '{title: $title, file: $file}')
   if [ "$first" = true ]; then
     first=false
   else
     printf ',\n' >> "$OUTPUT"
   fi
-  printf '  {"title": "%s", "file": "%s"}' "$title" "$MEDIA_DIR/$file" >> "$OUTPUT"
+  printf '  %s' "$json" >> "$OUTPUT"
 done
 printf '\n]\n' >> "$OUTPUT"

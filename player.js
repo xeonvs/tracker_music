@@ -6,6 +6,22 @@ function getCookie(name) {
 
 const token = getCookie('pt');
 
+const storageKey = 'prefs_' + (token || 'default');
+
+function loadPrefs() {
+  try {
+    return JSON.parse(localStorage.getItem(storageKey)) || {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function savePrefs() {
+  localStorage.setItem(storageKey, JSON.stringify(userPrefs));
+}
+
+let userPrefs = loadPrefs();
+
 // Ensure media requests include token header when required
 if (token) {
   (function(open, send) {
@@ -24,7 +40,7 @@ if (token) {
 
 let playlist = [];
 
-let currentIndex = 0;
+let currentFile = userPrefs.file || null;
 let audio = null;
 let track = null;
 let currentPlayer = null;
@@ -70,17 +86,25 @@ const elements = {
   random: document.getElementById('btn-random')
 };
 
+if (userPrefs.volume !== undefined) {
+  elements.volume.value = userPrefs.volume;
+  applyVolume();
+}
+
 function formatTime(t) {
   const m = Math.floor(t / 60).toString().padStart(2, '0');
   const s = Math.floor(t % 60).toString().padStart(2, '0');
   return m + ':' + s;
 }
 
-function loadTrack(index) {
+function loadTrack(file) {
+  const index = playlist.findIndex(t => t.file === file);
+  if (index === -1) return;
   if (audio && !audio.paused) audio.pause();
   if (track && track.close) track.close();
-  currentIndex = index;
-  const file = playlist[index].file;
+  currentFile = file;
+  userPrefs.file = file;
+  savePrefs();
   const ext = file.split('.').pop().toLowerCase();
   const pl = players[ext];
   currentPlayer = pl;
@@ -109,18 +133,19 @@ function loadTrack(index) {
 
 function updatePlaylistUI() {
   const items = elements.playlist.querySelectorAll('li');
+  const idx = playlist.findIndex(t => t.file === currentFile);
   items.forEach((li, i) => {
-    if (i === currentIndex) li.classList.add('active');
+    if (i === idx) li.classList.add('active');
     else li.classList.remove('active');
   });
 }
 
 function setupPlaylistUI() {
   elements.playlist.innerHTML = '';
-  playlist.forEach((t, i) => {
+  playlist.forEach((t) => {
     const li = document.createElement('li');
     li.textContent = t.title;
-    li.onclick = () => { loadTrack(i); playCurrent(); };
+    li.onclick = () => { loadTrack(t.file); playCurrent(); };
     elements.playlist.appendChild(li);
   });
   updatePlaylistUI();
@@ -150,7 +175,10 @@ function hookUpGain() {
 function playCurrent() {
   if (!audio) {
     if (!playlist.length) return;
-    loadTrack(currentIndex);
+    if (!currentFile || playlist.findIndex(t => t.file === currentFile) === -1) {
+      currentFile = playlist[0].file;
+    }
+    loadTrack(currentFile);
   }
   if (audio.context && audio.context.state === 'suspended') {
     audio.context.resume();
@@ -171,6 +199,7 @@ function stopCurrent() {
 
 function nextTrack() {
   let index;
+  const currentIndex = playlist.findIndex(t => t.file === currentFile);
   if (shuffleEnabled) {
     if (playlist.length <= 1) {
       index = currentIndex;
@@ -182,24 +211,44 @@ function nextTrack() {
   } else {
     index = (currentIndex + 1) % playlist.length;
   }
-  loadTrack(index);
+  loadTrack(playlist[index].file);
   playCurrent();
 }
 
 function prevTrack() {
-  loadTrack((currentIndex - 1 + playlist.length) % playlist.length);
+  const currentIndex = playlist.findIndex(t => t.file === currentFile);
+  const index = (currentIndex - 1 + playlist.length) % playlist.length;
+  loadTrack(playlist[index].file);
   playCurrent();
 }
 
 async function fetchPlaylist() {
   try {
     const response = await fetch('playlist.json');
-    playlist = await response.json();
+    const rawList = await response.json();
+    const newList = rawList.filter(t => t && typeof t.title === 'string' && typeof t.file === 'string' && t.file.startsWith('media/'));
+    playlist = newList;
     setupPlaylistUI();
-    if (playlist.length) {
-      currentIndex = 0;
-      elements.trackInfo.textContent = playlist[0].title;
+    const targetFile = userPrefs.file || currentFile;
+    if (targetFile) {
+      const found = playlist.find(t => t.file === targetFile);
+      if (found) {
+        currentFile = found.file;
+      } else if (playlist.length) {
+        currentFile = playlist[0].file;
+      }
+    } else if (playlist.length) {
+      currentFile = playlist[0].file;
     }
+    if (currentFile) {
+      const idx = playlist.findIndex(t => t.file === currentFile);
+      if (idx !== -1) {
+        elements.trackInfo.textContent = playlist[idx].title;
+        userPrefs.file = currentFile;
+        savePrefs();
+      }
+    }
+    updatePlaylistUI();
   } catch (err) {
     console.error('Failed to load playlist', err);
   }
@@ -238,6 +287,8 @@ function applyVolume() {
   if (currentPlayer && typeof currentPlayer.setVolume === 'function') {
     currentPlayer.setVolume(vol);
   }
+  userPrefs.volume = Number(elements.volume.value);
+  savePrefs();
 }
 
 elements.volume.addEventListener('input', applyVolume);
@@ -266,3 +317,4 @@ document.addEventListener('keydown', (e) => {
   }
 });
 fetchPlaylist();
+setInterval(fetchPlaylist, 30000);

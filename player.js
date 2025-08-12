@@ -117,6 +117,75 @@ const elements = {
   share: document.getElementById('btn-share')
 };
 
+const spectrumCanvas = document.getElementById('spectrum');
+let spectrumCtx = null;
+let spectrumInterval = null;
+let spectrumValues = [];
+
+function drawSpectrum() {
+  if (!spectrumCtx) return;
+  const width = spectrumCanvas.width;
+  const height = spectrumCanvas.height;
+  const barWidth = 3;
+  spectrumCtx.clearRect(0, 0, width, height);
+  for (let i = 0; i < spectrumValues.length; i++) {
+    const val = spectrumValues[i];
+    for (let y = 0; y < val; y++) {
+      let color;
+      if (y < height * 0.33) color = '#33ff33';
+      else if (y < height * 0.66) color = '#ffff33';
+      else color = '#ff3333';
+      spectrumCtx.fillStyle = color;
+      spectrumCtx.fillRect(i * barWidth, height - y, barWidth - 1, 1);
+    }
+  }
+}
+
+function updateSpectrum() {
+  const height = spectrumCanvas.height;
+  for (let i = 0; i < spectrumValues.length; i++) {
+    spectrumValues[i] = Math.random() * height;
+  }
+  drawSpectrum();
+}
+
+function startSpectrum() {
+  if (!spectrumCtx) return;
+  if (!spectrumValues.length) {
+    const width = spectrumCanvas.width;
+    const barWidth = 3;
+    const bars = Math.floor(width / barWidth);
+    spectrumValues = new Array(bars).fill(0);
+  }
+  stopSpectrum();
+  spectrumInterval = setInterval(updateSpectrum, 100);
+}
+
+function stopSpectrum() {
+  if (spectrumInterval) {
+    clearInterval(spectrumInterval);
+    spectrumInterval = null;
+  }
+}
+
+function resetSpectrum() {
+  if (!spectrumCtx) return;
+  stopSpectrum();
+  for (let i = 0; i < spectrumValues.length; i++) {
+    spectrumValues[i] = 0;
+  }
+  drawSpectrum();
+}
+
+if (spectrumCanvas && spectrumCanvas.getContext) {
+  spectrumCtx = spectrumCanvas.getContext('2d');
+  const width = spectrumCanvas.width;
+  const barWidth = 3;
+  const bars = Math.floor(width / barWidth);
+  spectrumValues = new Array(bars).fill(0);
+  drawSpectrum();
+}
+
 if (userPrefs.volume !== undefined) {
   elements.volume.value = userPrefs.volume;
   applyVolume();
@@ -171,6 +240,7 @@ function loadTrack(file) {
   if (index === -1) return false;
   if (audio && !audio.paused) audio.pause();
   if (track && track.close) track.close();
+  resetSpectrum();
   currentFile = file;
   userPrefs.file = file;
   savePrefs();
@@ -283,10 +353,12 @@ function playCurrent() {
     audio.context.resume();
   }
   if (audio) audio.play();
+  startSpectrum();
 }
 
 function pauseCurrent() {
   if (audio) audio.pause();
+  stopSpectrum();
 }
 
 function stopCurrent() {
@@ -294,6 +366,7 @@ function stopCurrent() {
     audio.pause();
     audio.currentTime = 0;
   }
+  resetSpectrum();
 }
 
 function nextTrack() {

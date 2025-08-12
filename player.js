@@ -47,7 +47,13 @@ let currentPlayer = null;
 
 let masterGain = null;
 
-let shuffleEnabled = false;
+let shuffleEnabled = !!userPrefs.shuffle;
+
+let firstLoad = true;
+let seeking = false;
+const params = new URLSearchParams(window.location.search);
+let initialTrack = params.get('track');
+const hasTrackParam = params.has('track');
 
 const audioPlayer = new Cowbell.Player.Audio();
 const openmptPlayer = new Cowbell.Player.OpenMPT({
@@ -83,12 +89,18 @@ const elements = {
   stop: document.getElementById('btn-stop'),
   next: document.getElementById('btn-next'),
   prev: document.getElementById('btn-prev'),
-  random: document.getElementById('btn-random')
+  random: document.getElementById('btn-random'),
+  share: document.getElementById('btn-share')
 };
 
 if (userPrefs.volume !== undefined) {
   elements.volume.value = userPrefs.volume;
   applyVolume();
+}
+
+if (shuffleEnabled) {
+  const img = elements.random.querySelector('img');
+  img.src = 'img/random_active.svg';
 }
 
 function formatTime(t) {
@@ -111,6 +123,18 @@ function normalizePath(path) {
     return null;
   }
   return normalized;
+}
+
+initialTrack = normalizePath(initialTrack || '');
+
+function showToast(text) {
+  const msg = document.createElement('div');
+  msg.className = 'toast';
+  msg.textContent = text;
+  document.body.appendChild(msg);
+  setTimeout(() => {
+    msg.remove();
+  }, 2000);
 }
 
 function loadTrack(file) {
@@ -137,13 +161,26 @@ function loadTrack(file) {
   hookUpGain();
   applyVolume();
   elements.trackInfo.textContent = playlist[index].title;
-  audio.onloadedmetadata = () => {
-    elements.progress.max = audio.duration;
-    elements.time.textContent = formatTime(0) + ' / ' + formatTime(audio.duration);
+  const initProgress = () => {
+    const duration = audio && isFinite(audio.duration) ? audio.duration : 0;
+    elements.progress.max = duration;
+    elements.progress.value = audio.currentTime || 0;
+    elements.time.textContent = formatTime(audio.currentTime || 0) + ' / ' + formatTime(duration);
   };
+  if ('onloadedmetadata' in audio) {
+    audio.onloadedmetadata = initProgress;
+  } else {
+    initProgress();
+  }
   audio.ontimeupdate = () => {
-    elements.progress.value = audio.currentTime;
-    elements.time.textContent = formatTime(audio.currentTime) + ' / ' + formatTime(audio.duration);
+    if (!seeking) {
+      elements.progress.value = audio.currentTime;
+    }
+    if (!elements.progress.max && isFinite(audio.duration)) {
+      elements.progress.max = audio.duration;
+    }
+    const duration = elements.progress.max || audio.duration || 0;
+    elements.time.textContent = formatTime(audio.currentTime) + ' / ' + formatTime(duration);
   };
   audio.onended = () => {
     nextTrack();
@@ -281,17 +318,31 @@ async function fetchPlaylist() {
       .filter(Boolean);
     playlist = newList;
     setupPlaylistUI();
-    const targetFile = userPrefs.file || currentFile;
+    let targetFile;
+    if (firstLoad && initialTrack) {
+      targetFile = initialTrack;
+    } else if (firstLoad && hasTrackParam) {
+      targetFile = null;
+    } else {
+      targetFile = userPrefs.file || currentFile;
+    }
     if (targetFile) {
       const found = playlist.find(t => t.file === targetFile);
       if (found) {
         currentFile = found.file;
+      } else if (firstLoad && hasTrackParam && playlist.length) {
+        currentFile = playlist[Math.floor(Math.random() * playlist.length)].file;
       } else if (playlist.length) {
         currentFile = playlist[0].file;
       }
     } else if (playlist.length) {
-      currentFile = playlist[0].file;
+      if (firstLoad && hasTrackParam) {
+        currentFile = playlist[Math.floor(Math.random() * playlist.length)].file;
+      } else {
+        currentFile = playlist[0].file;
+      }
     }
+    firstLoad = false;
     if (currentFile) {
       const idx = playlist.findIndex(t => t.file === currentFile);
       if (idx !== -1) {
@@ -316,10 +367,32 @@ elements.random.onclick = () => {
   shuffleEnabled = !shuffleEnabled;
   const img = elements.random.querySelector('img');
   img.src = shuffleEnabled ? 'img/random_active.svg' : 'img/random.svg';
+  userPrefs.shuffle = shuffleEnabled;
+  savePrefs();
 };
-
+elements.share.onclick = async () => {
+  if (!currentFile) return;
+  const url = new URL(window.location);
+  url.searchParams.set('track', currentFile);
+  try {
+    await navigator.clipboard.writeText(url.toString());
+    console.info('Link copied to clipboard:', url.toString());
+    showToast('Link copied to clipboard');
+  } catch (err) {
+    console.error('Failed to copy link', err);
+  }
+};
 elements.progress.oninput = () => {
-  if (audio) audio.currentTime = elements.progress.value;
+  if (audio) {
+    seeking = true;
+    if (!elements.progress.max && isFinite(audio.duration)) {
+      elements.progress.max = audio.duration;
+    }
+    audio.currentTime = parseFloat(elements.progress.value);
+  }
+};
+elements.progress.onchange = () => {
+  seeking = false;
 };
 
 function applyVolume() {

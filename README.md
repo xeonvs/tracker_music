@@ -1,76 +1,46 @@
 # Tracker Music Web Player
 
-Winamp-styled web player for tracker modules using [Cowbell](https://github.com/demozoo/cowbell), included as a git submodule in `vendor/cowbell`.
+A Winamp-styled web player for tracker modules powered by [Cowbell](https://github.com/demozoo/cowbell).
 
-## Usage
+## Features
+- Plays a variety of tracker formats and standard audio types
+- Seek bar and shuffle support with persisted preferences
+- Share button that copies a link to the current track
 
-Serve the project with nginx or any static HTTP server. The entry point is `index.cowbell.html`.
+## Getting Started
 
-Place tracker module files in the `media` directory and run `./generate_playlist.sh` to create a `playlist.json` file listing available tracks. The script only includes files using formats supported by the Cowbell SDK. Requests to `/media` must include the `X-Player-Token` header matching the `pt` cookie as in the example nginx configuration.
+1. Clone the repository and fetch the Cowbell submodule:
 
-### Example nginx configuration
+   ```
+   git submodule update --init --recursive
+   ```
 
-```nginx
-# /etc/nginx/conf.d/tracker.conf
-map $cookie_pt $pt_set {
-    "" $request_id;       # generate new token when cookie is missing
-    default $cookie_pt;    # reuse existing token
-}
+2. Add tracker modules to the `media` directory and generate the playlist:
 
-server {
-    listen 80;
-    server_name tracker.example.com;
+   ```
+   ./generate_playlist.sh
+   ```
 
-    root /usr/share/www/tracker;
-    index index.cowbell.html;
+3. Serve the repository root with any static HTTP server:
 
-    # Basic security and caching headers
-    add_header X-Frame-Options DENY always;
-    add_header X-Content-Type-Options nosniff always;
-    add_header Referrer-Policy no-referrer-when-downgrade always;
+   ```
+   python -m http.server
+   ```
 
-    # Set pt cookie if missing (visible to JavaScript)
-    add_header Set-Cookie "pt=$pt_set; Path=/; SameSite=Lax; Max-Age=86400" always;
+   Then open [http://localhost:8000/index.cowbell.html](http://localhost:8000/index.cowbell.html) in your browser.
 
-    # Static site files
-    location / {
-        try_files $uri $uri/ /index.cowbell.html;
-    }
-
-    # Require matching header and cookie to download modules
-    location /media/ {
-        try_files $uri =404;
-
-        if ($http_x_player_token = "") { return 403; }
-        if ($http_x_player_token != $cookie_pt) { return 403; }
-
-        add_header Cache-Control "no-store" always;
-    }
-
-    # Vendor assets with long-term caching
-    location /vendor/ {
-        try_files $uri =404;
-        add_header Cache-Control "public, max-age=31536000, immutable" always;
-    }
-
-    # Friendly 403 page
-    error_page 403 /403.html;
-    location = /403.html { internal; }
-}
-```
-
-After cloning the repository, fetch the Cowbell submodule:
-
-```
-git submodule update --init --recursive
-```
-
-The Cowbell SDK includes WebAssembly helpers (`libopenmpt.wasm` and `libpsgplay.wasm`) under `vendor/cowbell/cowbell/openmpt` and `vendor/cowbell/cowbell/psgplay`.
+Requests for files under `/media` must include the `X-Player-Token` header that matches the `pt` cookie. The repository contains an example nginx configuration.
 
 ## Hotkeys
 
-- **Space** — Play/Pause
-- **Arrow Left/Right** — Previous/Next track
+- **Space** — Play/Pause  
+- **Arrow Left/Right** — Previous/Next track  
 - **Arrow Up/Down** — Volume
 
-Cowbell is provided via git submodule in `vendor/cowbell`.
+## Contributing
+
+Pull requests and issues are welcome. Please run `./generate_playlist.sh` and ensure the site loads before submitting changes.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).

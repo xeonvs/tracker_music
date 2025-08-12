@@ -469,4 +469,6 @@ document.addEventListener('keydown', (e) => {
   }
 });
 fetchPlaylist();
-setInterval(fetchPlaylist, 30000);
+setInterval(() => {
+  if (!audio || audio.paused) fetchPlaylist();
+}, 30000);

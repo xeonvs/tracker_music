@@ -43,7 +43,11 @@ else
 fi;
 
 if command -v eslint >/dev/null 2>&1; then
-  eslint player.js;
+  if eslint --version | grep -Eq '^v?[0-8]\.'; then
+    eslint -c .eslintrc.json player.js;
+  else
+    echo "eslint version $(eslint --version) unsupported; skipping.";
+  fi;
 else
   echo "eslint not installed; skipping.";
 fi;

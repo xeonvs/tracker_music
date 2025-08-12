@@ -49,8 +49,8 @@ let masterGain = null;
 
 let shuffleEnabled = !!userPrefs.shuffle;
 
+
 let firstLoad = true;
-let seeking = false;
 const params = new URLSearchParams(window.location.search);
 let initialTrack = params.get('track');
 const hasTrackParam = params.has('track');
@@ -161,24 +161,24 @@ function loadTrack(file) {
   hookUpGain();
   applyVolume();
   elements.trackInfo.textContent = playlist[index].title;
-  const initProgress = () => {
-    const duration = audio && isFinite(audio.duration) ? audio.duration : 0;
-    elements.progress.max = duration;
-    elements.progress.value = audio.currentTime || 0;
-    elements.time.textContent = formatTime(audio.currentTime || 0) + ' / ' + formatTime(duration);
+  elements.progress.value = 0;
+  elements.progress.max = 0;
+  elements.time.textContent = '';
+  const initWithMetadata = () => {
+    if (isFinite(audio.duration)) {
+      elements.progress.max = audio.duration;
+      elements.time.textContent = formatTime(audio.currentTime) + ' / ' + formatTime(audio.duration);
+    }
   };
-  if ('onloadedmetadata' in audio) {
-    audio.onloadedmetadata = initProgress;
-  } else {
-    initProgress();
+  audio.onloadedmetadata = initWithMetadata;
+  if (audio.readyState >= (audio.HAVE_METADATA || 0)) {
+    initWithMetadata();
   }
   audio.ontimeupdate = () => {
-    if (!seeking) {
-      elements.progress.value = audio.currentTime;
-    }
     if (!elements.progress.max && isFinite(audio.duration)) {
       elements.progress.max = audio.duration;
     }
+    elements.progress.value = audio.currentTime;
     const duration = elements.progress.max || audio.duration || 0;
     elements.time.textContent = formatTime(audio.currentTime) + ' / ' + formatTime(duration);
   };
@@ -382,18 +382,13 @@ elements.share.onclick = async () => {
     console.error('Failed to copy link', err);
   }
 };
-elements.progress.oninput = () => {
-  if (audio) {
-    seeking = true;
-    if (!elements.progress.max && isFinite(audio.duration)) {
-      elements.progress.max = audio.duration;
-    }
-    audio.currentTime = parseFloat(elements.progress.value);
+elements.progress.addEventListener('input', (e) => {
+  if (!audio || !e.isTrusted) return;
+  if (!elements.progress.max && isFinite(audio.duration)) {
+    elements.progress.max = audio.duration;
   }
-};
-elements.progress.onchange = () => {
-  seeking = false;
-};
+  audio.currentTime = parseFloat(elements.progress.value);
+});
 
 function applyVolume() {
   const vol = elements.volume.value / 100;

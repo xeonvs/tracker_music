@@ -1,0 +1,19 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: sudo apt-get update && sudo apt-get install -y shellcheck eslint jq
+      - run: pip install playwright
+      - run: playwright install --with-deps chromium
+      - run: ./tests/test.sh

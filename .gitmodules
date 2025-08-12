@@ -1,0 +1,3 @@
+[submodule "vendor/cowbell"]
+	path = vendor/cowbell
+	url = https://github.com/demozoo/cowbell

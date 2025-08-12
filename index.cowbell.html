@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob:; img-src 'self'; media-src 'self'; connect-src 'self'" />
+  <title>Tracker Player</title>
+  <link rel="stylesheet" href="winamp.css" />
+  <script src="vendor/cowbell/cowbell/cowbell.js"></script>
+  <script src="vendor/cowbell/cowbell/web_audio_player.js"></script>
+  <script src="vendor/cowbell/cowbell/audio_player.js"></script>
+  <script src="vendor/cowbell/cowbell/ay_chip/lh4.js"></script>
+  <script src="vendor/cowbell/cowbell/ay_chip/ay_chip.js"></script>
+  <script src="vendor/cowbell/cowbell/ay_chip/psg_player.js"></script>
+  <script src="vendor/cowbell/cowbell/ay_chip/vtx_player.js"></script>
+  <script src="vendor/cowbell/cowbell/psgplay/libpsgplay.js"></script>
+  <script src="vendor/cowbell/cowbell/psgplay/psgplay_player.js"></script>
+  <script src="vendor/cowbell/cowbell/zx_spectrum/stc_player.js"></script>
+  <script src="vendor/cowbell/cowbell/zx_spectrum/pt3_player.js"></script>
+  <script src="vendor/cowbell/cowbell/zx_spectrum/sqt_player.js"></script>
+  <script src="vendor/cowbell/cowbell/jssid.js"></script>
+  <script src="vendor/cowbell/cowbell/asap/asap.js"></script>
+  <script src="vendor/cowbell/cowbell/asap/asap_player.js"></script>
+  <script src="vendor/cowbell/cowbell/openmpt/openmpt_player.js"></script>
+</head>
+<body>
+  <div id="player">
+    <div id="display">
+      <span id="track-info">-</span>
+      <span id="time">00:00 / 00:00</span>
+    </div>
+    <div id="controls">
+      <div id="controls-top">
+        <button id="btn-prev"><img src="img/prev.svg" alt="Prev" /></button>
+        <button id="btn-play"><img src="img/play.svg" alt="Play" /></button>
+        <button id="btn-pause"><img src="img/pause.svg" alt="Pause" /></button>
+        <button id="btn-stop"><img src="img/stop.svg" alt="Stop" /></button>
+        <button id="btn-next"><img src="img/next.svg" alt="Next" /></button>
+        <button id="btn-random" title="Shuffle"><img src="img/random.svg" alt="Shuffle" /></button>
+        <button id="btn-share" title="Share"><img src="img/share.svg" alt="Share" /></button>
+        <div id="volume-container">
+          <img src="img/volume.svg" alt="Vol" />
+          <input type="range" id="volume" min="0" max="100" value="80" orient="vertical" />
+        </div>
+      </div>
+      <input type="range" id="progress" min="0" value="0" />
+    </div>
+    <ul id="playlist"></ul>
+  </div>
+  <script src="player.js"></script>
+</body>
+</html>

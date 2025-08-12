@@ -27,7 +27,7 @@ done;
 curl -I http://localhost:8000/index.cowbell.html;
 curl -I http://localhost:8000/playlist.json;
 
-if [ -n "${CI:-}" ]; then
+if [ -n "${CI:-}" ] || [ -n "${GITHUB_RUN_ID:-}" ] || [ -n "${GITHUB_TOKEN:-}" ]; then
   python tests/e2e_test.py;
 else
   echo "Skipping Playwright E2E tests; run in CI only.";

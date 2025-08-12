@@ -29,7 +29,7 @@ A Winamp-styled web player for tracker modules powered by [Cowbell](https://gith
 
    Then open [http://localhost:8000/index.cowbell.html](http://localhost:8000/index.cowbell.html) in your browser.
 
-Requests for files under `/media` must include the `X-Player-Token` header that matches the `pt` cookie. The repository contains an example nginx configuration.
+Requests for files under `/media` must include the `X-Player-Token` header that matches the `pt` cookie. See `nginx.conf` for an example configuration.
 
 ## Hotkeys
 
@@ -39,7 +39,7 @@ Requests for files under `/media` must include the `X-Player-Token` header that 
 
 ## Contributing
 
-Pull requests and issues are welcome. Please run `./generate_playlist.sh` and ensure the site loads before submitting changes.
+Pull requests and issues are welcome.
 
 ## License
 

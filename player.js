@@ -78,6 +78,30 @@ const players = {
   it: openmptPlayer
 };
 
+let audioUnlocked = false;
+
+function unlockAudio() {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  Object.values(players).forEach(p => {
+    const ctx = p && p.context;
+    if (!ctx) return;
+    if (ctx.state === 'suspended') ctx.resume();
+    try {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      gain.gain.value = 0;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(0);
+      osc.stop(ctx.currentTime + 0.05);
+    } catch (e) {}
+  });
+}
+
+document.addEventListener('touchend', unlockAudio, { once: true });
+document.addEventListener('click', unlockAudio, { once: true });
+
 const elements = {
   trackInfo: document.getElementById('track-info'),
   time: document.getElementById('time'),
@@ -126,6 +150,9 @@ function normalizePath(path) {
 }
 
 initialTrack = normalizePath(initialTrack || '');
+if (initialTrack) {
+  currentFile = initialTrack;
+}
 
 function showToast(text) {
   const msg = document.createElement('div');
@@ -196,6 +223,10 @@ function updatePlaylistUI() {
     if (i === idx) li.classList.add('active');
     else li.classList.remove('active');
   });
+  const active = elements.playlist.querySelector('li.active');
+  if (active && typeof active.scrollIntoView === 'function') {
+    active.scrollIntoView({ block: 'nearest' });
+  }
 }
 
 function setupPlaylistUI() {
@@ -237,6 +268,7 @@ function hookUpGain() {
 
 
 function playCurrent() {
+  unlockAudio();
   if (!audio) {
     if (!playlist.length) return;
     if (!currentFile || playlist.findIndex(t => t.file === currentFile) === -1) {

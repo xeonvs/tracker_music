@@ -186,10 +186,10 @@ if (spectrumCanvas && spectrumCanvas.getContext) {
   drawSpectrum();
 }
 
-if (userPrefs.volume !== undefined) {
-  elements.volume.value = userPrefs.volume;
-  applyVolume();
-}
+// if (userPrefs.volume !== undefined) {
+//   elements.volume.value = userPrefs.volume;
+//   applyVolume();
+// }
 
 if (shuffleEnabled) {
   const img = elements.random.querySelector('img');
@@ -233,13 +233,33 @@ function showToast(text) {
   }, 2000);
 }
 
+function cleanupAudio() {
+  if (audio) {
+    try { audio.pause(); } catch (e) {}
+    if (audio.node && typeof audio.node.disconnect === 'function') {
+      try { audio.node.disconnect(); } catch (e) {}
+    }
+    audio.onloadedmetadata = null;
+    audio.ontimeupdate = null;
+    audio.onended = null;
+  }
+  if (track && typeof track.close === 'function') {
+    try { track.close(); } catch (e) {}
+  }
+  if (masterGain && masterGain.context) {
+    try { masterGain.disconnect(); } catch (e) {}
+    masterGain = null;
+  }
+  track = null;
+  audio = null;
+}
+
 function loadTrack(file) {
   file = normalizePath(file);
   if (!file) return false;
   const index = playlist.findIndex(t => t.file === file);
   if (index === -1) return false;
-  if (audio && !audio.paused) audio.pause();
-  if (track && track.close) track.close();
+  cleanupAudio();
   resetSpectrum();
   currentFile = file;
   userPrefs.file = file;
@@ -256,7 +276,7 @@ function loadTrack(file) {
   track = new pl.Track(file);
   audio = track.open();
   hookUpGain();
-  applyVolume();
+  // applyVolume(); // Volume control disabled
   elements.trackInfo.textContent = playlist[index].title;
   elements.progress.value = 0;
   elements.progress.max = 0;
@@ -327,10 +347,11 @@ function hookUpGain() {
     return;
   }
   if (audio.context && audio.node && audio.context.createGain) {
-    masterGain = audio.context.createGain();
     if (typeof audio.node.disconnect === 'function') {
       try { audio.node.disconnect(); } catch (e) {}
     }
+    masterGain = audio.context.createGain();
+    masterGain.gain.value = 1;
     audio.node.connect(masterGain);
     masterGain.connect(audio.context.destination);
   }
@@ -495,29 +516,29 @@ elements.progress.addEventListener('input', (e) => {
   audio.currentTime = parseFloat(elements.progress.value);
 });
 
-function applyVolume() {
-  const vol = elements.volume.value / 100;
-  if (audio) {
-    if (audio instanceof HTMLMediaElement) {
-      audio.volume = vol;
-    } else if (masterGain) {
-      masterGain.gain.value = vol;
-    } else if (typeof audio.setVolume === 'function') {
-      audio.setVolume(vol);
-    }
-  }
-  if (track && typeof track.setVolume === 'function') {
-    track.setVolume(vol);
-  }
-  if (currentPlayer && typeof currentPlayer.setVolume === 'function') {
-    currentPlayer.setVolume(vol);
-  }
-  userPrefs.volume = Number(elements.volume.value);
-  savePrefs();
-}
+// function applyVolume() {
+//   const vol = elements.volume.value / 100;
+//   if (audio) {
+//    if (audio instanceof HTMLMediaElement) {
+//      audio.volume = vol;
+//    } else if (masterGain) {
+//      masterGain.gain.value = vol;
+//    } else if (typeof audio.setVolume === 'function') {
+//      audio.setVolume(vol);
+//    }
+//  }
+//  if (track && typeof track.setVolume === 'function') {
+//    track.setVolume(vol);
+//  }
+//  if (currentPlayer && typeof currentPlayer.setVolume === 'function') {
+//    currentPlayer.setVolume(vol);
+//  }
+//  userPrefs.volume = Number(elements.volume.value);
+//  savePrefs();
+// }
 
-elements.volume.addEventListener('input', applyVolume);
-elements.volume.addEventListener('change', applyVolume);
+// elements.volume.addEventListener('input', applyVolume);
+// elements.volume.addEventListener('change', applyVolume);
 
 document.addEventListener('keydown', (e) => {
   switch (e.code) {
@@ -531,14 +552,14 @@ document.addEventListener('keydown', (e) => {
     case 'ArrowLeft':
       prevTrack();
       break;
-    case 'ArrowUp':
-      elements.volume.value = Math.min(100, Number(elements.volume.value) + 5);
-      applyVolume();
-      break;
-    case 'ArrowDown':
-      elements.volume.value = Math.max(0, Number(elements.volume.value) - 5);
-      applyVolume();
-      break;
+    // case 'ArrowUp':
+    //   elements.volume.value = Math.min(100, Number(elements.volume.value) + 5);
+    //   applyVolume();
+    //   break;
+    // case 'ArrowDown':
+    //   elements.volume.value = Math.max(0, Number(elements.volume.value) - 5);
+    //   applyVolume();
+    //   break;
   }
 });
 fetchPlaylist();

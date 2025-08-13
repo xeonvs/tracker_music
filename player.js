@@ -275,6 +275,14 @@ function loadTrack(file) {
   }
   track = new pl.Track(file);
   audio = track.open();
+  if (!audio) {
+    console.warn('Failed to open track', file);
+    if (track && typeof track.close === 'function') {
+      try { track.close(); } catch (e) {}
+    }
+    track = null;
+    return false;
+  }
   hookUpGain();
   // applyVolume(); // Volume control disabled
   elements.trackInfo.textContent = playlist[index].title;

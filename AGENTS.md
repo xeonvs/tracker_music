@@ -13,3 +13,8 @@
 - Manual checks are optional: `./tests/test.sh` already covers playlist generation and basic server availability, but you can still run `./generate_playlist.sh` and serve the repo over HTTP if you need to inspect pages manually.
 - When editing audio playback logic (e.g. `player.js`), clean up audio nodes and control playback logic so that only one track plays at a time.
 - Follow Web Audio best practices and general JavaScript best practices, clean up event listeners, and be secure to avoid vulnerabilities.
+- When working with callbacks triggered by underlying libraries, avoid destroying or reinitializing resources synchronously if the library may still access them; defer cleanup or verify the resource is no longer in use.
+- When interfacing with WebAssembly or similar low-level libraries, release temporary allocations after initialization to prevent memory leaks during sequential playback.
+- When finalizing WebAssembly-backed tracks, wait one tick before calling `close()` so that any library-internal callbacks (e.g., implicit `seek` operations) complete without touching freed memory.
+- Avoid triggering additional playback actions (e.g., `seek`) within completion callbacks if the underlying library already handles them; re-entrant calls can touch freed memory.
+- For any code change, evaluate the user experience across common scenarios (sequential playback, manual track switching, stopping, etc.) and ensure behavior remains intuitive.

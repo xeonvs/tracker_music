@@ -11,3 +11,5 @@
     again if you have write access.
 - Prefer `rg` (ripgrep) for code search and avoid `ls -R` or `grep -R` to keep operations fast.
 - Manual checks are optional: `./tests/test.sh` already covers playlist generation and basic server availability, but you can still run `./generate_playlist.sh` and serve the repo over HTTP if you need to inspect pages manually.
+- When editing audio playback logic (e.g. `player.js`), clean up audio nodes and control playback logic so that only one track plays at a time.
+- Follow Web Audio best practices and general JavaScript best practices, clean up event listeners, and be secure to avoid vulnerabilities.

@@ -244,7 +244,10 @@ function cleanupAudio() {
     audio.onended = null;
   }
   if (track && typeof track.close === 'function') {
-    try { track.close(); } catch (e) {}
+    const oldTrack = track;
+    setTimeout(() => {
+      try { oldTrack.close(); } catch (e) {}
+    }, 0);
   }
   if (masterGain && masterGain.context) {
     try { masterGain.disconnect(); } catch (e) {}
@@ -307,8 +310,16 @@ function loadTrack(file) {
     const duration = elements.progress.max || audio.duration || 0;
     elements.time.textContent = formatTime(audio.currentTime) + ' / ' + formatTime(duration);
   };
+  const playedFile = currentFile;
   audio.onended = () => {
-    nextTrack();
+    if (audio && typeof audio.currentTime === 'number') {
+      try { audio.currentTime = 0; } catch (e) {}
+    }
+    setTimeout(() => {
+      if (currentFile === playedFile) {
+        nextTrack();
+      }
+    }, 0);
   };
   updatePlaylistUI();
   return true;

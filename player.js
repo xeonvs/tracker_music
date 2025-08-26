@@ -4,7 +4,8 @@ function getCookie(name) {
   return match ? decodeURIComponent(match[2]) : null;
 }
 
-const token = getCookie('pt');
+const isGitHubPages = /\.github\.io$/.test(window.location.hostname);
+const token = isGitHubPages ? null : getCookie('pt');
 
 const storageKey = 'prefs_' + (token || 'default');
 
@@ -23,7 +24,7 @@ function savePrefs() {
 let userPrefs = loadPrefs();
 
 // Ensure media requests include token header when required
-if (token) {
+if (!isGitHubPages && token) {
   (function(open, send) {
     XMLHttpRequest.prototype.open = function(method, url, async, user, pass) {
       this._url = url;

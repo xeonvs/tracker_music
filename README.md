@@ -28,8 +28,14 @@ A Winamp-styled web player for [music modules](https://modarchive.org/index.php)
    ```
 
    Then open [http://localhost:8000/index.cowbell.html](http://localhost:8000/index.cowbell.html) in your browser.
+For public hosting, requests for files under `/media` must include the `X-Player-Token` header that matches the `pt` cookie. The included `nginx.conf` demonstrates one way to enforce this in production:
 
-For public hosting, requests for files under `/media` must include the `X-Player-Token` header that matches the `pt` cookie. See `nginx.conf` for an example configuration.
+1. Copy `nginx.conf` to `/etc/nginx/conf.d/tracker.conf`.
+2. Adjust `server_name` and `root` to match your domain and installation path.
+3. Reload Nginx, e.g. `sudo nginx -s reload`.
+
+When served from GitHub Pages this protection is disabled automatically because custom response headers are not supported.
+
 
 ## Hotkeys
 

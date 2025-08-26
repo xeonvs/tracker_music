@@ -1,9 +1,9 @@
 # Tracker Music Web Player
 
-A Winamp-styled web player for tracker modules powered by [Cowbell](https://github.com/demozoo/cowbell).
+A Winamp-styled web player for [music modules](https://modarchive.org/index.php) powered by [Cowbell](https://github.com/demozoo/cowbell).
 
 ## Features
-- Plays a variety of tracker formats and standard audio types
+- Plays a variety of [music modules](https://modarchive.org/index.php) formats and standard audio types
 - Seek bar and shuffle support with persisted preferences
 - Share button that copies a link to the current track
 
@@ -29,7 +29,7 @@ A Winamp-styled web player for tracker modules powered by [Cowbell](https://gith
 
    Then open [http://localhost:8000/index.cowbell.html](http://localhost:8000/index.cowbell.html) in your browser.
 
-Requests for files under `/media` must include the `X-Player-Token` header that matches the `pt` cookie. See `nginx.conf` for an example configuration.
+For public hosting, requests for files under `/media` must include the `X-Player-Token` header that matches the `pt` cookie. See `nginx.conf` for an example configuration.
 
 ## Hotkeys
 
@@ -37,6 +37,11 @@ Requests for files under `/media` must include the `X-Player-Token` header that 
 - **Arrow Left/Right** — Previous/Next track  
 - **Arrow Up/Down** — Volume
 
+## Known Issues
+
+- Volume not changing. See [#8](https://github.com/demozoo/cowbell/issues/8)
+- Fake visualisation
+  
 ## Contributing
 
 Pull requests and issues are welcome.

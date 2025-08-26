@@ -36,6 +36,7 @@ For public hosting, requests for files under `/media` must include the `X-Player
 
 When served from GitHub Pages this protection is disabled automatically because custom response headers are not supported.
 
+
 ## Hotkeys
 
 - **Space** — Play/Pause  
